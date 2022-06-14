@@ -1,4 +1,4 @@
-#include "Algorithm/DepthFirstSearch.h"
+#include <Euler/Euler.h>
 #include <algorithm>
 #include <gtest/gtest.h>
 
@@ -50,7 +50,7 @@ struct DepthFirstFixture : public ::testing::Test {
     };
 
     template<Node value>
-    class VisitorNotSolveable: public Visitor {
+    class VisitorNotSolveable : public Visitor {
     public:
         virtual bool isSolveable() { return path.size() == 0 || path.back() != value; }
     };
@@ -79,7 +79,7 @@ struct DepthFirstFixture : public ::testing::Test {
     }
     std::vector<std::shared_ptr<Node>> path;
     using DepthFirstSearch =
-        Algorithm::DeapthFirstSearch<DepthFirstFixture::Graph, DepthFirstFixture::Node, DepthFirstFixture::Node>;
+        Euler::Graph::DeapthFirstSearch<DepthFirstFixture::Graph, DepthFirstFixture::Node, DepthFirstFixture::Node>;
     Graph graph;
 };
 
@@ -127,7 +127,6 @@ TEST_F(DepthFirstFixture, check1to5) {
     EXPECT_EQ(*(path[2]), 4);
     EXPECT_EQ(*(path[3]), 5);
 }
-
 
 TEST_F(DepthFirstFixture, check1to5Unsolvable) {
     auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
@@ -177,8 +176,6 @@ TEST_F(DepthFirstFixture, check4to6) {
     EXPECT_FALSE(result);
 }
 
-
-
 TEST_F(DepthFirstFixture, check1to7) {
     auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = Visitor{};
@@ -209,12 +206,12 @@ struct MoveOnly {
 
 // used to test protected/private functions
 template<typename Graph, typename Node, typename Neighbor>
-struct TestDeapthFirst : public Algorithm::DeapthFirstSearch<Graph, Node, Neighbor> {
+struct TestDeapthFirst : public Euler::Graph::DeapthFirstSearch<Graph, Node, Neighbor> {
 public:
-    using typename Algorithm::DeapthFirstSearch<Graph, Node, Neighbor>::PathNode;
-    using Algorithm::DeapthFirstSearch<Graph, Node, Neighbor>::exploreNeighborhood;
-    using Algorithm::DeapthFirstSearch<Graph, Node, Neighbor>::getNeighbor;
-    using Algorithm::DeapthFirstSearch<Graph, Node, Neighbor>::next;
+    using typename Euler::Graph::DeapthFirstSearch<Graph, Node, Neighbor>::PathNode;
+    using Euler::Graph::DeapthFirstSearch<Graph, Node, Neighbor>::exploreNeighborhood;
+    using Euler::Graph::DeapthFirstSearch<Graph, Node, Neighbor>::getNeighbor;
+    using Euler::Graph::DeapthFirstSearch<Graph, Node, Neighbor>::next;
 };
 
 TEST(DeapthFirstSearch, PathNode_MoveOnly) {

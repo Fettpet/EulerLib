@@ -4,8 +4,9 @@
 #include <utility>
 #include <vector>
 
-namespace Algorithm {
-
+namespace Euler {
+namespace Graph {
+    
 template<typename Graph, typename Node, typename IsPart, typename Neighbors, typename Compare = std::less<Node>>
 class FloodFill : private IsPart, private Neighbors {
 
@@ -77,5 +78,5 @@ protected:
     std::stack<Node> toLook;
     std::set<Node, Compare> members{Compare{}};
 };
-
-} // namespace Algorithm
+} // namespace Graph
+} // namespace Euler

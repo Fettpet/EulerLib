@@ -1,11 +1,11 @@
 #pragma once
-#include <glog/logging.h>
 #include <memory>
 #include <utility>
 #include <vector>
+#include <cassert>
 
-namespace Algorithm {
-
+namespace Euler {
+namespace Graph {
 template<typename Graph, typename Node, typename Neighbor>
 class DeapthFirstSearch {
 public:
@@ -152,7 +152,7 @@ protected:
     }
 
     inline auto getNeighbor() -> std::shared_ptr<Neighbor> {
-        DCHECK(!neighborsList.empty());
+        assert(!neighborsList.empty());
         return getLastNeighbor()->currentNeighbor();
     }
 
@@ -191,8 +191,8 @@ protected:
         inline void next() { ++currentNeighborIt; }
 
         inline auto currentNeighbor() const -> std::shared_ptr<Neighbor> {
-            DCHECK(!neighbors.empty());
-            DCHECK(currentNeighborIt != neighbors.end());
+            assert(!neighbors.empty());
+            assert(currentNeighborIt != neighbors.end());
             return *currentNeighborIt;
         }
 
@@ -206,17 +206,17 @@ protected:
     };
 
     inline auto getLastNeighbor() -> std::unique_ptr<PathNode>& {
-        DCHECK(!neighborsList.empty());
+        assert(!neighborsList.empty());
         return neighborsList.back();
     }
 
     inline auto getLastNeighbor() const -> std::unique_ptr<PathNode> const& {
-        DCHECK(!neighborsList.empty());
+        assert(!neighborsList.empty());
         return neighborsList.back();
     }
 
     std::vector<std::unique_ptr<PathNode>> neighborsList;
     std::shared_ptr<Node> currentNode;
 };
-
-} // namespace Algorithm
+} // namespace Graph
+} // namespace Euler
