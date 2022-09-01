@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 project (EulerLib LANGUAGES CXX)
-
+include_guard(GLOBAL)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(EULER_BUILD_TEST ON)
