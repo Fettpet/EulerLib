@@ -3,3 +3,4 @@ project (EulerTest LANGUAGES CXX)
 
 enable_testing()
 add_subdirectory(Graph)
+add_subdirectory(Set)
