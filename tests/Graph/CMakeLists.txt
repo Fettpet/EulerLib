@@ -10,8 +10,8 @@ if(${EULER_BUILD_TEST})
         GLOB_RECURSE
         GraphEuler-tests
         "*.test.cpp")
+target_link_libraries(GraphEulerTest PUBLIC gtest_main EulerLib)
 
     add_executable(GraphEulerTest ${GraphEuler-tests})
-    target_link_libraries(GraphEulerTest gtest_main Euler)
     add_test(GraphEulerTest GraphEulerTest)
 endif()
