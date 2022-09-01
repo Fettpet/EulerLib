@@ -3,8 +3,8 @@ project (EulerLib LANGUAGES CXX)
 include_guard(GLOBAL)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(EULER_BUILD_TEST ON)
-set(EULER_BUILD_EXAMPLE OFF)
+option(EULER_BUILD_TEST ON)
+option(EULER_BUILD_EXAMPLE OFF)
 
 add_subdirectory(src)
 
