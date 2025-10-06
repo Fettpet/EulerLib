@@ -1,8 +1,8 @@
 #pragma once
+#include <cassert>
 #include <memory>
 #include <utility>
 #include <vector>
-#include <cassert>
 
 namespace Euler {
 namespace Graph {
@@ -56,9 +56,10 @@ public:
         auto neighbor = getNeighbor();
 
         while (!neighborsList.empty()) {
-            visitor.beforeMoveBack(graph, currentNode, neighbor);
-            moveBackward(graph, currentNode, neighbor);
-            visitor.afterMoveBack(graph, currentNode, neighbor);
+            // pass references to visitor/move callbacks
+            visitor.beforeMoveBack(graph, *currentNode, *neighbor);
+            moveBackward(graph, *currentNode, *neighbor);
+            visitor.afterMoveBack(graph, *currentNode, *neighbor);
             neighbor = getNeighbor();
             if (next()) {
                 break;
@@ -110,9 +111,10 @@ protected:
         MoveBackward&& moveBackward) -> bool {
         while (!neighborsList.empty()) {
             auto neighbor = getNeighbor();
-            visitor.beforeMove(graph, currentNode, neighbor);
-            auto const solveable = moveForward(graph, currentNode, neighbor);
-            visitor.afterMove(graph, currentNode, neighbor);
+            // pass references to visitor/move callbacks
+            visitor.beforeMove(graph, *currentNode, *neighbor);
+            auto const solveable = moveForward(graph, *currentNode, *neighbor);
+            visitor.afterMove(graph, *currentNode, *neighbor);
             if (isSolved(graph, *currentNode)) {
                 return true;
             }
@@ -137,9 +139,10 @@ protected:
         MoveBackward&& moveBackward) -> bool {
 
         while (!neighborsList.empty()) {
-            visitor.beforeMoveBack(graph, currentNode, neighbor);
-            moveBackward(graph, currentNode, neighbor);
-            visitor.afterMoveBack(graph, currentNode, neighbor);
+            // pass references to visitor/move callbacks
+            visitor.beforeMoveBack(graph, *currentNode, *neighbor);
+            moveBackward(graph, *currentNode, *neighbor);
+            visitor.afterMoveBack(graph, *currentNode, *neighbor);
 
             if (next()) {
                 return true;
