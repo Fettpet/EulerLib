@@ -1,22 +1,22 @@
 #pragma once
 #include <cassert>
-#include <memory>
 #include <utility>
 #include <vector>
 
 namespace Euler {
 namespace Graph {
 template<typename Graph, typename Node, typename Neighbor>
-class DeapthFirstSearch {
+class DepthFirstSearch {
 public:
+    virtual ~DepthFirstSearch() = default;
     /*
      * getNeighbors(Graph, Node) -> std::vector<Neighbor>
      * isSolved(Graph, Node) -> boolean
-     * MoveForward(Graph, Node, Neighbor) -> Node
-     * MoveBackward(Graph, Node, Neighbor) -> Node
+     * MoveForward(Graph, Node, Neighbor) -> boolean
+     * MoveBackward(Graph, Node, Neighbor) -> void
      */
     template<typename GetNeighbors, typename IsSolved, typename Visitor, typename MoveForward, typename MoveBackward>
-    inline auto start(
+    auto start(
         Graph& graph,
         Node& start,
         Visitor& visitor,
@@ -27,8 +27,8 @@ public:
         clear();
         visitor.init(graph, start);
 
-        currentNode = std::make_shared<Node>(start);
-        if (!exploreNeighborhood(graph, currentNode, getNeighbors)) {
+        this->currentNode = std::addressof(start);
+        if (!this->exploreNeighborhood(graph, *this->currentNode, getNeighbors)) {
             return false;
         }
 
@@ -45,7 +45,7 @@ public:
     }
 
     template<typename GetNeighbors, typename IsSolved, typename Visitor, typename MoveForward, typename MoveBackward>
-    inline auto goOn(
+    auto goOn(
         Graph& graph,
         Visitor& visitor,
         GetNeighbors&& getNeighbors,
@@ -53,26 +53,25 @@ public:
         MoveForward&& moveForward,
         MoveBackward&& moveBackward) -> bool {
         visitor.goOn(graph);
-        auto neighbor = getNeighbor();
+        auto& neighbor = this->getNeighbor();
 
-        while (!neighborsList.empty()) {
+        while (!this->pathStack.empty()) {
             // pass references to visitor/move callbacks
-            visitor.beforeMoveBack(graph, *currentNode, *neighbor);
-            moveBackward(graph, *currentNode, *neighbor);
-            visitor.afterMoveBack(graph, *currentNode, *neighbor);
-            neighbor = getNeighbor();
-            if (next()) {
+            visitor.beforeMoveBack(graph, *this->currentNode, neighbor);
+            moveBackward(graph, *this->currentNode, neighbor);
+            visitor.afterMoveBack(graph, *this->currentNode, neighbor);
+
+            if (this->next()) {
                 break;
             }
             else {
-                neighborsList.pop_back();
-                if (neighborsList.empty()) {
-                    return isSolved(graph, *currentNode);
+                this->pathStack.pop_back();
+                if (this->pathStack.empty()) {
+                    return isSolved(graph, *this->currentNode);
                 }
-                neighbor = getNeighbor();
             }
         }
-        auto result = mainLoop(
+        auto result = this->mainLoop(
             graph,
             visitor,
             std::forward<GetNeighbors>(getNeighbors),
@@ -83,19 +82,19 @@ public:
         return result;
     }
 
-    virtual inline auto buildPath() const -> std::vector<std::shared_ptr<Node>> {
-        auto result = std::vector<std::shared_ptr<Node>>{};
-        for (auto const& pathNode : neighborsList) {
-            result.push_back(pathNode->getNode());
+    virtual auto buildPath() -> std::vector<Node> {
+        auto result = std::vector<Node>{};
+        for (auto& pathNode : pathStack) {
+            result.push_back(std::move(pathNode).getNode());
         }
-        result.push_back(currentNode);
+        if (currentNode) result.push_back(std::move(*currentNode));
         return result;
     }
 
-    virtual inline auto getNeighborsPath() const -> std::vector<std::shared_ptr<Neighbor>> {
-        std::vector<std::shared_ptr<Neighbor>> result;
-        for (auto& neighbor : neighborsList) {
-            result.push_back(neighbor->currentNeighbor());
+    virtual auto getNeighborsPath() -> std::vector<Neighbor> {
+        std::vector<Neighbor> result;
+        for (auto& neighbor : pathStack) {
+            result.push_back(std::move(neighbor).currentNeighbor());
         }
         return result;
     }
@@ -109,21 +108,23 @@ protected:
         IsSolved&& isSolved,
         MoveForward&& moveForward,
         MoveBackward&& moveBackward) -> bool {
-        while (!neighborsList.empty()) {
-            auto neighbor = getNeighbor();
+        while (!this->pathStack.empty()) {
+            auto& neighbor = this->getNeighbor();
             // pass references to visitor/move callbacks
-            visitor.beforeMove(graph, *currentNode, *neighbor);
-            auto const solveable = moveForward(graph, *currentNode, *neighbor);
-            visitor.afterMove(graph, *currentNode, *neighbor);
-            if (isSolved(graph, *currentNode)) {
+            visitor.beforeMove(graph, *this->currentNode, neighbor);
+            auto const solveable = moveForward(graph, *this->currentNode, neighbor);
+            visitor.afterMove(graph, *this->currentNode, neighbor);
+            if (isSolved(graph, *this->currentNode)) {
                 return true;
             }
             if (!solveable || !visitor.isSolveable()) {
-                gotoNextNeighbor(graph, currentNode, neighbor, visitor, std::forward<MoveBackward>(moveBackward));
+                this->gotoNextNeighbor(
+                    graph, *this->currentNode, neighbor, visitor, std::forward<MoveBackward>(moveBackward));
                 continue;
             }
-            if (!exploreNeighborhood(graph, currentNode, std::forward<GetNeighbors>(getNeighbors))) {
-                gotoNextNeighbor(graph, currentNode, neighbor, visitor, std::forward<MoveBackward>(moveBackward));
+            if (!this->exploreNeighborhood(graph, *this->currentNode, std::forward<GetNeighbors>(getNeighbors))) {
+                this->gotoNextNeighbor(
+                    graph, *this->currentNode, neighbor, visitor, std::forward<MoveBackward>(moveBackward));
                 continue;
             }
         }
@@ -131,95 +132,99 @@ protected:
     }
 
     template<typename Visitor, typename MoveBackward>
-    inline auto gotoNextNeighbor(
-        Graph& graph,
-        std::shared_ptr<Node>& currentNode,
-        std::shared_ptr<Neighbor>& neighbor,
-        Visitor& visitor,
-        MoveBackward&& moveBackward) -> bool {
+    auto gotoNextNeighbor(
+        Graph& graph, Node& currentNode, Neighbor& neighbor, Visitor& visitor, MoveBackward&& moveBackward) -> bool {
 
-        while (!neighborsList.empty()) {
+        while (!this->pathStack.empty()) {
             // pass references to visitor/move callbacks
-            visitor.beforeMoveBack(graph, *currentNode, *neighbor);
-            moveBackward(graph, *currentNode, *neighbor);
-            visitor.afterMoveBack(graph, *currentNode, *neighbor);
+            visitor.beforeMoveBack(graph, currentNode, neighbor);
+            moveBackward(graph, currentNode, neighbor);
+            visitor.afterMoveBack(graph, currentNode, neighbor);
 
-            if (next()) {
+            if (this->next()) {
                 return true;
             }
-            neighborsList.pop_back();
-            if (neighborsList.empty()) return false;
-            neighbor = getNeighbor();
+            this->pathStack.pop_back();
+            if (this->pathStack.empty()) return false;
         }
         return false;
     }
 
-    inline auto getNeighbor() -> std::shared_ptr<Neighbor> {
-        assert(!neighborsList.empty());
-        return getLastNeighbor()->currentNeighbor();
+    auto getNeighbor() -> Neighbor& {
+        assert(!this->pathStack.empty());
+        return this->getLastNeighbor().currentNeighbor();
     }
 
     template<typename GetNeighbors>
-    inline auto exploreNeighborhood(Graph& graph, std::shared_ptr<Node> const& node, GetNeighbors&& getNeighbors)
-        -> bool {
-        auto&& neighbors = getNeighbors(graph, *node);
-        if (neighbors.size() == 0) return false;
-        neighborsList.emplace_back(std::make_unique<PathNode>(node, std::move(neighbors)));
-        return getLastNeighbor()->isValid();
+    auto exploreNeighborhood(Graph& graph, Node& node, GetNeighbors&& getNeighbors) -> bool {
+        auto&& neighbors = getNeighbors(graph, node);
+        if (neighbors.empty()) return false;
+        this->pathStack.emplace_back(node, std::move(neighbors));
+        return this->getLastNeighbor().isValid();
     }
 
-    inline auto next() -> bool {
-        if (neighborsList.empty()) return false;
-        if (!getLastNeighbor()->isValid()) {
+    auto next() -> bool {
+        if (this->pathStack.empty()) return false;
+        if (!this->getLastNeighbor().isValid()) {
             return false;
         }
-        getLastNeighbor()->next();
-        return getLastNeighbor()->isValid();
+        this->getLastNeighbor().next();
+        return this->getLastNeighbor().isValid();
     }
 
-    inline void clear() { neighborsList.clear(); }
+    void clear() {
+        pathStack.clear();
+        currentNode = nullptr;
+    }
 
     struct PathNode {
 
-        inline PathNode(std::shared_ptr<Node> const& start, std::vector<Neighbor>&& neighborList)
-            : start(start) {
-            if (neighborList.empty()) return;
-            for (auto& neighbor : neighborList) {
-                neighbors.emplace_back(std::make_shared<Neighbor>(std::move(neighbor)));
-            }
-            currentNeighborIt = neighbors.begin();
-        }
+        PathNode(Node&& startNode, std::vector<Neighbor>&& neighborList)
+            : start(std::move(startNode))
+            , neighbors(std::move(neighborList))
+            , currentNeighborIndex(0) {}
 
-        inline auto isValid() const -> bool { return currentNeighborIt != neighbors.end(); }
-        inline void next() { ++currentNeighborIt; }
+        PathNode(Node const& startNode, std::vector<Neighbor>&& neighborList)
+            : start(startNode)
+            , neighbors(std::move(neighborList))
+            , currentNeighborIndex(0) {}
 
-        inline auto currentNeighbor() const -> std::shared_ptr<Neighbor> {
+        auto isValid() const -> bool { return currentNeighborIndex < neighbors.size(); }
+        void next() { ++currentNeighborIndex; }
+
+        auto currentNeighbor() & -> Neighbor& {
             assert(!neighbors.empty());
-            assert(currentNeighborIt != neighbors.end());
-            return *currentNeighborIt;
+            assert(currentNeighborIndex < neighbors.size());
+            return neighbors[currentNeighborIndex];
+        }
+        auto currentNeighbor() const& -> const Neighbor& {
+            assert(!neighbors.empty());
+            assert(currentNeighborIndex < neighbors.size());
+            return neighbors[currentNeighborIndex];
         }
 
-        auto getNode() const -> std::shared_ptr<Node> const& { return start; }
+        auto currentNeighbor() && -> Neighbor { return std::move(neighbors[currentNeighborIndex]); }
+        auto getNode() const& -> const Node& { return start; }
+        auto getNode() && -> Node { return std::move(start); }
 
     protected:
-        using NeighborIterator = typename std::vector<std::shared_ptr<Neighbor>>::iterator;
-        std::shared_ptr<Node> start;
-        std::vector<std::shared_ptr<Neighbor>> neighbors;
-        NeighborIterator currentNeighborIt;
+        Node start;
+        std::vector<Neighbor> neighbors;
+        std::size_t currentNeighborIndex;
     };
 
-    inline auto getLastNeighbor() -> std::unique_ptr<PathNode>& {
-        assert(!neighborsList.empty());
-        return neighborsList.back();
+    auto getLastNeighbor() -> PathNode& {
+        assert(!pathStack.empty());
+        return pathStack.back();
     }
 
-    inline auto getLastNeighbor() const -> std::unique_ptr<PathNode> const& {
-        assert(!neighborsList.empty());
-        return neighborsList.back();
+    auto getLastNeighbor() const -> PathNode const& {
+        assert(!pathStack.empty());
+        return pathStack.back();
     }
 
-    std::vector<std::unique_ptr<PathNode>> neighborsList;
-    std::shared_ptr<Node> currentNode;
+    std::vector<PathNode> pathStack;
+    Node* currentNode{nullptr};
 };
 } // namespace Graph
 } // namespace Euler
