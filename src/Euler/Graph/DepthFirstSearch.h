@@ -53,13 +53,12 @@ public:
         MoveForward&& moveForward,
         MoveBackward&& moveBackward) -> bool {
         visitor.goOn(graph);
-        auto& neighbor = this->getNeighbor();
-
         while (!this->pathStack.empty()) {
+            auto& currentNeighbor = this->getNeighbor();
             // pass references to visitor/move callbacks
-            visitor.beforeMoveBack(graph, *this->currentNode, neighbor);
-            moveBackward(graph, *this->currentNode, neighbor);
-            visitor.afterMoveBack(graph, *this->currentNode, neighbor);
+            visitor.beforeMoveBack(graph, *this->currentNode, currentNeighbor);
+            moveBackward(graph, *this->currentNode, currentNeighbor);
+            visitor.afterMoveBack(graph, *this->currentNode, currentNeighbor);
 
             if (this->next()) {
                 break;
@@ -118,13 +117,11 @@ protected:
                 return true;
             }
             if (!solveable || !visitor.isSolveable()) {
-                this->gotoNextNeighbor(
-                    graph, *this->currentNode, neighbor, visitor, std::forward<MoveBackward>(moveBackward));
+                this->gotoNextNeighbor(graph, *this->currentNode, visitor, std::forward<MoveBackward>(moveBackward));
                 continue;
             }
             if (!this->exploreNeighborhood(graph, *this->currentNode, std::forward<GetNeighbors>(getNeighbors))) {
-                this->gotoNextNeighbor(
-                    graph, *this->currentNode, neighbor, visitor, std::forward<MoveBackward>(moveBackward));
+                this->gotoNextNeighbor(graph, *this->currentNode, visitor, std::forward<MoveBackward>(moveBackward));
                 continue;
             }
         }
@@ -132,14 +129,13 @@ protected:
     }
 
     template<typename Visitor, typename MoveBackward>
-    auto gotoNextNeighbor(
-        Graph& graph, Node& currentNode, Neighbor& neighbor, Visitor& visitor, MoveBackward&& moveBackward) -> bool {
+    auto gotoNextNeighbor(Graph& graph, Node& currentNode, Visitor& visitor, MoveBackward&& moveBackward) -> bool {
 
         while (!this->pathStack.empty()) {
-            // pass references to visitor/move callbacks
-            visitor.beforeMoveBack(graph, currentNode, neighbor);
-            moveBackward(graph, currentNode, neighbor);
-            visitor.afterMoveBack(graph, currentNode, neighbor);
+            auto& currentNeighbor = this->getNeighbor();
+            visitor.beforeMoveBack(graph, currentNode, currentNeighbor);
+            moveBackward(graph, currentNode, currentNeighbor);
+            visitor.afterMoveBack(graph, currentNode, currentNeighbor);
 
             if (this->next()) {
                 return true;

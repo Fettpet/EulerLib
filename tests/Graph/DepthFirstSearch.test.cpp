@@ -82,10 +82,10 @@ struct DepthFirstFixture : public ::testing::Test {
 };
 
 TEST_F(DepthFirstFixture, check1to3) {
-    auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
+    auto depthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = Visitor{};
     auto node = DepthFirstFixture::Node{1};
-    auto result = deapthFirstSearch.start(
+    auto result = depthFirstSearch.start(
         graph,
         node,
         visitor,
@@ -95,7 +95,7 @@ TEST_F(DepthFirstFixture, check1to3) {
         getMoveBackwardFunctor());
 
     EXPECT_TRUE(result);
-    path = deapthFirstSearch.buildPath();
+    path = depthFirstSearch.buildPath();
     EXPECT_EQ(path.size(), 3u);
     EXPECT_EQ(visitor.backwardPath.size(), 0u);
     EXPECT_EQ((path[0]), 1);
@@ -104,10 +104,10 @@ TEST_F(DepthFirstFixture, check1to3) {
 }
 
 TEST_F(DepthFirstFixture, check1to5) {
-    auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
+    auto depthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = Visitor{};
     auto node = DepthFirstFixture::Node{1};
-    auto result = deapthFirstSearch.start(
+    auto result = depthFirstSearch.start(
         graph,
         node,
         visitor,
@@ -117,7 +117,7 @@ TEST_F(DepthFirstFixture, check1to5) {
         getMoveBackwardFunctor());
 
     EXPECT_TRUE(result);
-    path = deapthFirstSearch.buildPath();
+    path = depthFirstSearch.buildPath();
     EXPECT_EQ(path.size(), 4u);
     EXPECT_EQ(visitor.backwardPath.size(), 1u);
     EXPECT_EQ((path[0]), 1);
@@ -127,10 +127,10 @@ TEST_F(DepthFirstFixture, check1to5) {
 }
 
 TEST_F(DepthFirstFixture, check1to5Unsolvable) {
-    auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
+    auto depthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = VisitorNotSolveable<4>{};
     auto node = DepthFirstFixture::Node{1};
-    auto result = deapthFirstSearch.start(
+    auto result = depthFirstSearch.start(
         graph,
         node,
         visitor,
@@ -143,10 +143,10 @@ TEST_F(DepthFirstFixture, check1to5Unsolvable) {
 }
 
 TEST_F(DepthFirstFixture, check1to5WithBlocked3) {
-    auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
+    auto depthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = VisitorNotSolveable<3>{};
     auto node = DepthFirstFixture::Node{1};
-    auto result = deapthFirstSearch.start(
+    auto result = depthFirstSearch.start(
         graph,
         node,
         visitor,
@@ -159,10 +159,10 @@ TEST_F(DepthFirstFixture, check1to5WithBlocked3) {
 }
 
 TEST_F(DepthFirstFixture, check4to6) {
-    auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
+    auto depthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = Visitor{};
     auto node = DepthFirstFixture::Node{4};
-    auto result = deapthFirstSearch.start(
+    auto result = depthFirstSearch.start(
         graph,
         node,
         visitor,
@@ -175,10 +175,10 @@ TEST_F(DepthFirstFixture, check4to6) {
 }
 
 TEST_F(DepthFirstFixture, check1to7) {
-    auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
+    auto depthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = Visitor{};
     auto node = DepthFirstFixture::Node{1};
-    auto result = deapthFirstSearch.start(
+    auto result = depthFirstSearch.start(
         graph,
         node,
         visitor,
@@ -288,7 +288,7 @@ TEST(DepthFirstSearch, complex_explore_neihboor) {
 }
 
 TEST_F(DepthFirstFixture, StartIsGoal) {
-    auto deapthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
+    auto depthFirstSearch = DepthFirstFixture::DepthFirstSearch{};
     auto visitor = Visitor{};
     auto node = DepthFirstFixture::Node{1};
 
@@ -305,7 +305,7 @@ TEST_F(DepthFirstFixture, StartIsGoal) {
     auto moveBackward = [&](Graph&, Node&, Node&) {};
 
     auto result =
-        deapthFirstSearch.start(graph, node, visitor, getNeighbors, getIsSolvedFunctor(1), moveForward, moveBackward);
+        depthFirstSearch.start(graph, node, visitor, getNeighbors, getIsSolvedFunctor(1), moveForward, moveBackward);
 
     EXPECT_TRUE(result);
 }
