@@ -131,8 +131,8 @@ protected:
         currentNodeValue = Node{};
     }
 
-    std::deque<Node> queue;
-    std::vector<Node> visited;
+    std::deque<Node> queue{};
+    std::vector<Node> visited{};
     Node* currentNode{nullptr};
     Node currentNodeValue{};
 };
