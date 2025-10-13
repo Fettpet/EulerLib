@@ -64,7 +64,7 @@ public:
 
     virtual auto buildPath() -> std::vector<Node> {
         // For BFS return the list of visited nodes in visitation order.
-        auto result = visited;
+        std::vector<Node> result{};
         if (this->currentNode) {
             if (std::find(result.begin(), result.end(), *this->currentNode) == result.end()) {
                 result.push_back(*this->currentNode);
